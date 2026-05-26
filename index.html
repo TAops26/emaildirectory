@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tierramor — Email Directory</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F2EEE4;
+    color: #3a2e26;
+    padding: 24px;
+  }
+  .header-bar {
+    background: #544236;
+    border-radius: 10px 10px 0 0;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 3px solid #995C44;
+  }
+  .logo-dot {
+    width: 32px; height: 32px;
+    background: #995C44;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; color: #E8E2D1;
+  }
+  .header-bar h1 {
+    color: #E8E2D1;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .header-bar span {
+    color: #c4b8a8;
+    font-size: 13px;
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .controls {
+    background: #735145;
+    padding: 10px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .controls input {
+    background: rgba(232,226,209,0.15);
+    border: 0.5px solid rgba(232,226,209,0.4);
+    border-radius: 6px;
+    color: #E8E2D1;
+    font-size: 13px;
+    padding: 7px 12px;
+    outline: none;
+    min-width: 220px;
+    flex: 1;
+  }
+  .controls input::placeholder { color: rgba(232,226,209,0.5); }
+  .filter-btn {
+    background: rgba(232,226,209,0.12);
+    border: 0.5px solid rgba(232,226,209,0.35);
+    border-radius: 6px;
+    color: #E8E2D1;
+    font-size: 12px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { background: rgba(153,92,68,0.5); }
+  .filter-btn.active { background: #995C44; border-color: #995C44; }
+  .table-wrap {
+    border: 0.5px solid rgba(84,66,54,0.25);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    background: #E8E2D1;
+  }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  col.c1 { width: 16%; }
+  col.c2 { width: 22%; }
+  col.c3 { width: 22%; }
+  col.c4 { width: 21%; }
+  col.c5 { width: 11%; }
+  col.c6 { width: 8%; }
+  thead tr { background: #d8d0be; }
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #735145;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(115,81,69,0.25);
+  }
+  tbody tr {
+    border-bottom: 0.5px solid rgba(84,66,54,0.12);
+    transition: background 0.1s;
+  }
+  tbody tr:nth-child(even) { background: #f0ece2; }
+  tbody tr:nth-child(odd) { background: #E8E2D1; }
+  tbody tr:hover { background: rgba(153,92,68,0.1); }
+  tbody tr.inactive { opacity: 0.45; }
+  tbody td {
+    padding: 9px 12px;
+    font-size: 12.5px;
+    color: #3a2e26;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .email-chip {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11.5px;
+    color: #735145;
+    background: rgba(115,81,69,0.1);
+    border-radius: 4px;
+    padding: 2px 7px;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .email-chip.changed {
+    color: #7a3a1e;
+    background: rgba(153,92,68,0.15);
+    font-weight: 700;
+  }
+  .badge-na {
+    font-size: 11px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    background: rgba(84,66,54,0.12);
+    color: #8a7060;
+    display: inline-block;
+  }
+  .badge-same {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    border-radius: 4px;
+    padding: 2px 7px;
+    background: rgba(118,114,78,0.15);
+    color: #4e4b28;
+    display: inline-block;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  .dot-active { background: #76724E; }
+  .dot-former { background: #717F7E; }
+  .dot-na { background: rgba(84,66,54,0.3); }
+  .status-text { font-size: 11.5px; color: #6b5549; vertical-align: middle; }
+  .note-text { font-size: 11px; color: #8a7060; font-style: italic; }
+  .count-bar {
+    background: rgba(84,66,54,0.06);
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #8a7060;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-top: 0.5px solid rgba(84,66,54,0.12);
+  }
+  .count-bar b { color: #544236; }
+  .legend {
+    padding: 10px 16px;
+    font-size: 11.5px;
+    color: #8a7060;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-top: 0.5px solid rgba(84,66,54,0.1);
+    background: rgba(84,66,54,0.04);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .no-results {
+    text-align: center;
+    padding: 2rem;
+    color: #8a7060;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <div class="logo-dot">&#9632;</div>
+  <h1>Tierramor <span>— Email Directory</span></h1>
+</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search by name, email or position..." oninput="render()">
+  <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" onclick="setFilter('active',this)">Active</button>
+  <button class="filter-btn" onclick="setFilter('former',this)">Former</button>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <colgroup>
+      <col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Previous Email</th>
+        <th>New Email</th>
+        <th>Position</th>
+        <th>Note</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="count-bar" id="countbar"></div>
+  <div class="legend">
+    <div class="legend-item"><span class="status-dot dot-active"></span> Active</div>
+    <div class="legend-item"><span class="status-dot dot-former"></span> Former employee</div>
+    <div class="legend-item"><span class="email-chip changed" style="font-size:10px;padding:1px 5px;">bold</span> New address</div>
+    <div class="legend-item"><span class="badge-same" style="font-size:10px;padding:1px 5px;">regular</span> Unchanged</div>
+    <div class="legend-item"><span class="badge-na" style="font-size:10px;padding:1px 5px;">N/A</span> No email assigned</div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {name:"Alejandro Alvarado", prev:"paisajimo@tierramor.cr", nuevo:"aa@tierramor.cr", cargo:"Landscaping Coordinator", note:"", status:"active"},
+  {name:"—", prev:"andres@tierramor.cr", nuevo:"N/A", cargo:"—", note:"", status:"na"},
+  {name:"Cecilia Coronado", prev:"ceci@tierramor.cr", nuevo:"cc@tierramor.cr", cargo:"Bioconstruction Manager", note:"", status:"active"},
+  {name:"Daniel Rojas", prev:"daniel@tierramor.cr", nuevo:"dr@tierramor.cr", cargo:"Basecamp Manager", note:"", status:"active"},
+  {name:"Daniela Gonzalez", prev:"dg@tierramor.cr", nuevo:"dg@tierramor.cr", cargo:"—", note:"", status:"active"},
+  {name:"Fernanda Brenes", prev:"facturas@tierramor.cr", nuevo:"facturas@tierramor.cr", cargo:"Administrative Coordinator", note:"Tierramor LLC", status:"active"},
+  {name:"Fernanda Brenes", prev:"facturacion@tierramor.cr", nuevo:"facturacion@tierramor.cr", cargo:"Administrative Coordinator", note:"Tierramor Hospitality", status:"active"},
+  {name:"Heather Deeth", prev:"heather@tierramor.cr", nuevo:"hd@tierramor.cr", cargo:"COO", note:"", status:"active"},
+  {name:"Javier Abdelnour", prev:"finca@tierramor.cr", nuevo:"ja@tierramor.cr", cargo:"Farm Manager", note:"", status:"active"},
+  {name:"Krizia Aguilar", prev:"krizia@tierramor.cr", nuevo:"ka@tierramor.cr", cargo:"Experience Manager", note:"", status:"active"},
+  {name:"—", prev:"lyah@tierramor.cr", nuevo:"N/A", cargo:"Former Sales", note:"", status:"former"},
+  {name:"Madison Bronwyn", prev:"marketing@tierramor.cr", nuevo:"mb@tierramor.cr", cargo:"Marketing Manager", note:"", status:"active"},
+  {name:"Maricruz Arce", prev:"maricruz@tierramor.cr", nuevo:"ma@tierramor.cr", cargo:"Content Coordinator", note:"", status:"active"},
+  {name:"Matt Richards", prev:"m@tierramor.cr", nuevo:"m@tierramor.cr", cargo:"Founder", note:"", status:"active"},
+  {name:"—", prev:"juicebar@tierramor.cr", nuevo:"juicebar@tierramor.cr", cargo:"—", note:"", status:"na"},
+  {name:"Nicolas Michaelsen", prev:"nicolas@tierramor.cr", nuevo:"nm@tierramor.cr", cargo:"CEO", note:"", status:"active"},
+  {name:"—", prev:"nicole@tierramor.cr", nuevo:"N/A", cargo:"Former COO", note:"", status:"former"},
+  {name:"Nicolas Salas", prev:"operations@tierramor.cr", nuevo:"ns@tierramor.cr", cargo:"Operations Manager", note:"", status:"active"},
+  {name:"Paula Vanegas", prev:"controller@tierramor.cr", nuevo:"pv@tierramor.cr", cargo:"Finance Controller", note:"", status:"active"},
+  {name:"Yandiris", prev:"proveduria@tierramor.cr", nuevo:"proveduria@tierramor.cr", cargo:"Procurement Coordinator", note:"", status:"active"},
+  {name:"—", prev:"reception@tierramor.cr", nuevo:"reception@tierramor.cr", cargo:"—", note:"", status:"na"},
+  {name:"—", prev:"sasha@tierramor.cr", nuevo:"N/A", cargo:"Former Sales", note:"", status:"former"},
+  {name:"Sergio Fernandez", prev:"cocina@tierramor.cr", nuevo:"sf@tierramor.cr", cargo:"Kitchen Manager", note:"", status:"active"},
+  {name:"Shoshana Balistierri", prev:"shoshana@tierramor.cr", nuevo:"sb@tierramor.cr", cargo:"—", note:"", status:"active"},
+  {name:"Fernanda Brenes", prev:"talent@tierramor.cr", nuevo:"talent@tierramor.cr", cargo:"Administrative Coordinator", note:"", status:"active"},
+  {name:"—", prev:"events@tierramor.cr", nuevo:"events@tierramor.cr", cargo:"—", note:"", status:"na"},
+  {name:"Tomás Guzmán", prev:"garden@tierramor.cr", nuevo:"tg@tierramor.cr", cargo:"Food Production Coordinator", note:"", status:"active"},
+];
+
+let filter = 'all';
+function setFilter(f, el) {
+  filter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function prevChip(e) {
+  if (!e || e === 'N/A') return '<span class="badge-na">N/A</span>';
+  return '<span class="email-chip">' + e + '</span>';
+}
+function newChip(prev, nuevo) {
+  if (!nuevo || nuevo === 'N/A') return '<span class="badge-na">N/A</span>';
+  if (nuevo === prev) return '<span class="badge-same">' + nuevo + '</span>';
+  return '<span class="email-chip changed">' + nuevo + '</span>';
+}
+function statusCell(s) {
+  if (s === 'active') return '<span class="status-dot dot-active"></span><span class="status-text">Active</span>';
+  if (s === 'former') return '<span class="status-dot dot-former"></span><span class="status-text">Former</span>';
+  return '<span class="status-dot dot-na"></span><span class="status-text" style="color:#b0a090">—</span>';
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const rows = data.filter(r => {
+    if (filter === 'active' && r.status !== 'active') return false;
+    if (filter === 'former' && r.status !== 'former') return false;
+    if (!q) return true;
+    return [r.name, r.prev, r.nuevo, r.cargo, r.note].join(' ').toLowerCase().includes(q);
+  });
+  const tbody = document.getElementById('tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-results">No results found</td></tr>';
+  } else {
+    tbody.innerHTML = rows.map(r => {
+      const cls = r.status === 'former' ? ' class="inactive"' : '';
+      const nameCell = r.name !== '—' ? '<strong>' + r.name + '</strong>' : '<span style="color:#b0a090">—</span>';
+      const cargoCell = r.cargo !== '—' ? r.cargo : '<span style="color:#b0a090">—</span>';
+      const noteCell = r.note ? '<span class="note-text">' + r.note + '</span>' : '';
+      return '<tr' + cls + '><td>' + nameCell + '</td><td>' + prevChip(r.prev) + '</td><td>' + newChip(r.prev, r.nuevo) + '</td><td>' + cargoCell + '</td><td>' + noteCell + '</td><td>' + statusCell(r.status) + '</td></tr>';
+    }).join('');
+  }
+  const active = data.filter(r => r.status === 'active').length;
+  const former = data.filter(r => r.status === 'former').length;
+  document.getElementById('countbar').innerHTML =
+    'Showing <b>' + rows.length + '</b> of ' + data.length + ' records &nbsp;·&nbsp; ' +
+    '<b style="color:#76724E">' + active + '</b> active &nbsp;·&nbsp; ' +
+    '<b style="color:#717F7E">' + former + '</b> former';
+}
+render();
+</script>
+</body>
+</html>
