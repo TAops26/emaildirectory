@@ -1196,7 +1196,8 @@ function openMyPerformance(){
   const idx=colabs.findIndex(u=>u.usuario===CU.usuario);
   const color=BLOB_COLORS[idx%BLOB_COLORS.length];
   const blobC=BLOB_LIGHT.map((_,j)=>BLOB_LIGHT[(idx+j)%BLOB_LIGHT.length]);
-  setConScreen('Mi Desempeño',()=>{renderHome();show('home');},`
+  const backFn = () => { if(CU.rol==='admin'){renderHome();}else{renderDeptHome();} show('home'); };
+  setConScreen('Mi Desempeño', backFn,`
     <div style="text-align:center;margin-bottom:1.2rem;">${dialSVG('—',0,color,blobC,210,80)}
       <div style="font-size:1.15rem;font-style:italic;color:var(--brown);margin-top:.25rem;">${CU.nombre}</div>
       <div style="font-size:.7rem;font-family:sans-serif;color:var(--tm);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem;">${DEPT_LABEL[CU.departamento]||CU.departamento}</div>
