@@ -338,7 +338,10 @@ function show(id) {
 }
 function nav(to) {
   stopRec();
-  if (to === 'home') { renderHome(); show('home'); }
+  if (to === 'home') {
+    if (CU && CU.rol !== 'admin') { renderDeptHome(); show('home'); }
+    else { renderHome(); show('home'); }
+  }
   else if (to === 'dept') openDept(CD);
 }
 
@@ -356,8 +359,13 @@ async function doLogin() {
   if (match) {
     CU = match;
     document.getElementById('lerr').textContent = '';
-    renderHome();
-    show('home');
+    if (CU.rol === 'admin') {
+      renderHome();
+      show('home');
+    } else {
+      renderDeptHome();
+      show('home');
+    }
   } else {
     document.getElementById('lerr').textContent = 'Usuario o contraseña incorrectos.';
   }
@@ -432,6 +440,61 @@ function renderHome() {
     </button>`;
   }
 
+  document.getElementById('home-depts').innerHTML = btns;
+}
+
+// ── DEPT HOME (non-admin) ──
+function renderDeptHome() {
+  const deptCfg = {
+    limpieza:      { lbl:'Limpieza',                 sub:'Manuales, checklists e inventarios',  ico:'HK', cls:'a' },
+    mantenimiento: { lbl:'Mantenimiento',             sub:'Manuales preventivos y reportes',     ico:'MT', cls:'b' },
+    proveeduria:   { lbl:'Proveduría y Transportes', sub:'Calendario y recursos operativos',     ico:'PT', cls:'c' },
+    seguridad:     { lbl:'Seguridad',                sub:'Protocolos y reportes de incidencias', ico:'SG', cls:'d' },
+  };
+  const deptLabel = { limpieza:'Limpieza', mantenimiento:'Mantenimiento', proveeduria:'Proveduría y Transportes', seguridad:'Seguridad' };
+  const d = CU.departamento;
+  const cfg = deptCfg[d] || { lbl:d, sub:'', ico:'OP', cls:'a' };
+
+  document.getElementById('home-profile').innerHTML = `
+    <div style="background:var(--brown);padding:1.5rem 1.1rem 1.8rem;">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.4rem;">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(232,226,209,.15);border:2px solid rgba(232,226,209,.3);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-family:sans-serif;font-weight:600;color:var(--cream);flex-shrink:0;">${CU.iniciales}</div>
+        <div>
+          <div style="color:var(--cream);font-size:1.05rem;font-style:italic;">Bienvenido, ${CU.nombre.split(' ')[0]}</div>
+          <div style="color:var(--tm);font-size:.7rem;font-family:sans-serif;text-transform:uppercase;letter-spacing:.1em;margin-top:.15rem;">${deptLabel[d]||d} · Colaborador</div>
+        </div>
+        <button onclick="logout()" style="margin-left:auto;background:none;border:1px solid rgba(232,226,209,.25);border-radius:6px;color:var(--tm);font-size:.68rem;font-family:sans-serif;padding:.28rem .55rem;cursor:pointer;">Salir</button>
+      </div>
+      <button class="dept-btn" onclick="openMyPerformance()" style="background:rgba(255,255,255,.08);border:1px solid rgba(232,226,209,.15);margin-bottom:0;">
+        <div class="dico ${cfg.cls}" style="background:rgba(232,226,209,.12);color:var(--cream);">DE</div>
+        <div class="dinf">
+          <h3 style="color:var(--cream);">Mi Desempeño</h3>
+          <p style="color:var(--tm);">KPIs, cumplimiento y evaluación de pares</p>
+        </div>
+        <span style="color:var(--tm);font-size:.75rem;">→</span>
+      </button>
+    </div>`;
+
+  const dept = DEPTS[d];
+  let btns = `<div class="sec-lbl" style="margin-top:1.4rem;">Tu área de trabajo</div>`;
+
+  if (dept) {
+    dept.resources.forEach(r => {
+      btns += `<button class="dept-btn" onclick="openResource('${r.id}','${r.title}','${r.type||'doc'}')">
+        <div class="dico ${cfg.cls}">${cfg.ico}</div>
+        <div class="dinf"><h3>${r.title}</h3><p>${r.desc||''}</p></div>
+        <span style="color:var(--tm);font-size:.75rem;">→</span>
+      </button>`;
+    });
+    if (dept.reports.length) {
+      btns += `<div class="sec-lbl" style="margin-top:.6rem;">Reportes</div>`;
+      dept.reports.forEach(r => {
+        btns += `<button class="rbtn ${r.cls}" onclick="openForm('${r.form}')">
+          <div class="rdot"></div><span>${r.label}</span><span class="arr">→</span>
+        </button>`;
+      });
+    }
+  }
   document.getElementById('home-depts').innerHTML = btns;
 }
 
